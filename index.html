@@ -252,7 +252,7 @@
       flex-shrink: 0;
     }
 
-    /* Submenu (Vælg konto & Tema) */
+    /* Submenu (Vælg konto) */
     .submenu {
       display: none;
       flex-direction: column;
@@ -351,23 +351,13 @@
         </button>
         <div class="submenu" id="accountsSubmenu"></div>
 
-        <!-- Tema vælger (Lyst, System, Mørk) -->
-        <button class="menu-item" onclick="toggleSubmenu('themeSubmenu')">
+        <!-- Direkte klik-skift mellem Lyst, Mørkt og System tema -->
+        <button class="menu-item" onclick="cycleTheme()">
           <span class="menu-item-left">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-            </svg>
-            <span id="currentThemeLabel">Mørkt tema</span>
+            <span id="themeIconContainer" style="display:flex;align-items:center;"></span>
+            <span id="currentThemeLabel">Lyst tema</span>
           </span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
         </button>
-        <div class="submenu" id="themeSubmenu">
-          <button class="sub-item" data-theme-choice="light" onclick="setTheme('light')">Lyst tema</button>
-          <button class="sub-item" data-theme-choice="system" onclick="setTheme('system')">System</button>
-          <button class="sub-item" data-theme-choice="dark" onclick="setTheme('dark')">Mørkt tema</button>
-        </div>
       </div>
 
       <!-- Log ud (Rød) -->
@@ -407,7 +397,15 @@
     let linkedMcAccounts = [];
     let selectedMcAccount = null;
 
-    // --- TEMA LOGIK (Lyst, System, Mørk) ---
+    // --- TEMA LOGIK (Direkte skift ved klik: dark -> light -> system -> dark) ---
+    const THEME_ORDER = ["dark", "light", "system"];
+
+    const THEME_ICONS = {
+      sun: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`,
+      moon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+      system: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`
+    };
+
     function applyResolvedTheme(choice) {
       let resolved = choice;
       if (choice === "system") {
@@ -415,25 +413,31 @@
       }
       document.documentElement.setAttribute("data-theme", resolved);
 
-      const labels = {
-        light: "Lyst tema",
-        system: "System tema",
-        dark: "Mørkt tema"
-      };
-      document.getElementById("currentThemeLabel").textContent = labels[choice] || "Mørkt tema";
+      const labelEl = document.getElementById("currentThemeLabel");
+      const iconEl = document.getElementById("themeIconContainer");
 
-      document.querySelectorAll("[data-theme-choice]").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.themeChoice === choice);
-      });
+      // Viser hvad der sker eller hvilket tema der er aktivt
+      if (choice === "dark") {
+        labelEl.textContent = "Lyst tema";
+        iconEl.innerHTML = THEME_ICONS.sun;
+      } else if (choice === "light") {
+        labelEl.textContent = "System tema";
+        iconEl.innerHTML = THEME_ICONS.system;
+      } else {
+        labelEl.textContent = "Mørkt tema";
+        iconEl.innerHTML = THEME_ICONS.moon;
+      }
     }
 
-    function setTheme(choice) {
-      localStorage.setItem("sa_theme_choice", choice);
-      applyResolvedTheme(choice);
+    function cycleTheme() {
+      const current = localStorage.getItem("sa_theme_choice") || "dark";
+      const next = THEME_ORDER[(THEME_ORDER.indexOf(current) + 1) % THEME_ORDER.length];
+      localStorage.setItem("sa_theme_choice", next);
+      applyResolvedTheme(next);
     }
 
     window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
-      if ((localStorage.getItem("sa_theme_choice") || "system") === "system") {
+      if ((localStorage.getItem("sa_theme_choice") || "dark") === "system") {
         applyResolvedTheme("system");
       }
     });
@@ -587,7 +591,7 @@
 
     // --- INIT VED SIDEINDLÆSNING ---
     (async function init() {
-      const savedTheme = localStorage.getItem("sa_theme_choice") || "system";
+      const savedTheme = localStorage.getItem("sa_theme_choice") || "dark";
       applyResolvedTheme(savedTheme);
 
       const hash = new URLSearchParams(window.location.hash.slice(1));
