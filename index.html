@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord OAuth2 Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #2c2f33;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #23272a;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 24px;
+        }
+        p {
+            color: #b9bbbe;
+            line-height: 1.5;
+        }
+        .discord-btn {
+            display: inline-block;
+            background-color: #5865F2;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+        }
+        .discord-btn:hover {
+            background-color: #4752C4;
+        }
+        .result-box {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #2c2f33;
+            border-radius: 5px;
+            border-left: 4px solid #43b581;
+            text-align: left;
+            word-break: break-all;
+            display: none;
+        }
+        .error-box {
+            border-left-color: #f04747;
+        }
+        code {
+            color: #43b581;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Discord OAuth2 Testside</h1>
+    <p>Klik på knappen herunder for at logge ind med Discord og teste dit redirect URI.</p>
+    
+    <a id="login-btn" class="discord-btn" href="#">Log ind med Discord</a>
+
+    <div id="result" class="result-box"></div>
+</div>
+
+<script>
+    // Konfiguration baseret på dine oplysninger
+    const CLIENT_ID = "1575580760658682060";
+    const REDIRECT_URI = encodeURIComponent("https://github.io");
+    const SCOPES = encodeURIComponent("guilds guilds.join connections email");
+
+    // Opbyg OAuth2 URL
+    const authUrl = `https://discord.com{CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}&scope=${SCOPES}`;
+    document.getElementById("login-btn").href = authUrl;
+
+    // Tjek om brugeren lige er blevet sendt tilbage fra Discord med en 'code' eller 'error'
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const error = urlParams.get('error');
+    const resultDiv = document.getElementById("result");
+
+    if (code) {
+        resultDiv.style.display = "block";
+        resultDiv.innerHTML = `
+            <strong>✅ Login godkendt!</strong><br><br>
+            Modtaget Authorization Code:<br>
+            <code>${code}</code><br><br>
+            <small style="color: #b9bbbe;">Denne kode skal nu sendes til din backend-server for at hente brugerens access_token.</small>
+        `;
+    } else if (error) {
+        resultDiv.style.display = "block";
+        resultDiv.classList.add("error-box");
+        resultDiv.innerHTML = `
+            <strong>❌ Login fejlede eller blev annulleret</strong><br><br>
+            Fejl: <code>${error}</code>
+        `;
+    }
+</script>
+
+</body>
+</html>
