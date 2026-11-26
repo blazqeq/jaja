@@ -1,115 +1,613 @@
 <!DOCTYPE html>
-<html lang="da">
+<html lang="da" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discord OAuth2 Test</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #2c2f33;
-            color: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background-color: #23272a;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
-        }
-        h1 {
-            margin-top: 0;
-            font-size: 24px;
-        }
-        p {
-            color: #b9bbbe;
-            line-height: 1.5;
-        }
-        .discord-btn {
-            display: inline-block;
-            background-color: #5865F2;
-            color: white;
-            text-decoration: none;
-            padding: 12px 24px;
-            border-radius: 5px;
-            font-weight: bold;
-            font-size: 16px;
-            margin-top: 20px;
-            transition: background-color 0.2s;
-        }
-        .discord-btn:hover {
-            background-color: #4752C4;
-        }
-        .result-box {
-            margin-top: 25px;
-            padding: 15px;
-            background-color: #2c2f33;
-            border-radius: 5px;
-            border-left: 4px solid #43b581;
-            text-align: left;
-            word-break: break-all;
-            display: none;
-        }
-        .error-box {
-            border-left-color: #f04747;
-        }
-        code {
-            color: #43b581;
-            font-family: monospace;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SuperAwesome Profile Test</title>
+  <style>
+    :root {
+      --bg-page: #0d0d0f;
+      --bg-surface: #17171a;
+      --bg-surface-hover: #222227;
+      --border-color: #27272c;
+      --text-primary: #f4f4f6;
+      --text-secondary: #9e9ea8;
+      --accent-discord: #5865F2;
+      --accent-discord-hover: #4752C4;
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.12);
+      --shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+    }
+
+    [data-theme="light"] {
+      --bg-page: #f3f4f6;
+      --bg-surface: #ffffff;
+      --bg-surface-hover: #f0f1f4;
+      --border-color: #e2e4e9;
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 24px;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    /* Center Login Area */
+    .main-container {
+      max-width: 520px;
+      margin: auto;
+      text-align: center;
+    }
+
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 32px 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .card h1 {
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 12px 18px;
+      border-radius: 10px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+      text-decoration: none;
+    }
+
+    .btn:active {
+      transform: scale(0.99);
+    }
+
+    .btn-discord {
+      background: var(--accent-discord);
+      color: #ffffff;
+    }
+
+    .btn-discord:hover {
+      background: var(--accent-discord-hover);
+    }
+
+    /* Bottom-Left Profile Widget */
+    .profile-dock {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1000;
+    }
+
+    .profile-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-width: 245px;
+      padding: 10px 14px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-primary);
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .profile-trigger:hover {
+      background: var(--bg-surface-hover);
+    }
+
+    .profile-info {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      text-align: left;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #2b2d31;
+      flex-shrink: 0;
+    }
+
+    .mc-head {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      image-rendering: pixelated;
+    }
+
+    .user-meta {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.25;
+    }
+
+    .discord-name {
+      font-weight: 600;
+      font-size: 0.93rem;
+    }
+
+    .selected-mc {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 2px;
+    }
+
+    .chevron-icon {
+      color: var(--text-secondary);
+      transition: transform 0.2s ease;
+    }
+
+    /* Dropdown Popover */
+    .dropdown-menu {
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 0;
+      width: 275px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(8px);
+      transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+    }
+
+    .dropdown-menu.open {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .dropdown-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .dropdown-section {
+      padding: 6px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .dropdown-section:last-child {
+      border-bottom: none;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 9px 11px;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.12s ease;
+    }
+
+    .menu-item:hover {
+      background: var(--bg-surface-hover);
+    }
+
+    .menu-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .menu-item svg {
+      width: 17px;
+      height: 17px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    /* Submenu (Vælg konto & Tema) */
+    .submenu {
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+      padding: 4px 6px 6px 28px;
+    }
+
+    .submenu.open {
+      display: flex;
+    }
+
+    .sub-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 10px;
+      border-radius: 7px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .sub-item:hover {
+      background: var(--bg-surface-hover);
+      color: var(--text-primary);
+    }
+
+    .sub-item.active {
+      color: var(--text-primary);
+      font-weight: 600;
+      background: var(--bg-surface-hover);
+    }
+
+    /* Logout Red */
+    .menu-item.logout {
+      color: var(--danger);
+    }
+
+    .menu-item.logout svg {
+      color: var(--danger);
+    }
+
+    .menu-item.logout:hover {
+      background: var(--danger-bg);
+    }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Discord OAuth2 Testside</h1>
-    <p>Klik på knappen herunder for at logge ind med Discord og teste dit redirect URI.</p>
-    
-    <a id="login-btn" class="discord-btn" href="#">Log ind med Discord</a>
+  <!-- Midterkort (Login eller Status) -->
+  <div class="main-container">
+    <div class="card" id="loginCard">
+      <h1>Log ind med Discord</h1>
+      <p>Forbind din Discord-konto for at hente dine tilknyttede Minecraft-brugere fra SuperAwesome.</p>
+      <button class="btn btn-discord" onclick="loginWithDiscord()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028z"/>
+        </svg>
+        Log ind med Discord
+      </button>
+    </div>
 
-    <div id="result" class="result-box"></div>
-</div>
+    <div class="card" id="loggedInCard" style="display: none;">
+      <h1 id="welcomeTitle">Velkommen tilbage!</h1>
+      <p>Tryk på dit Discord-profilkort nederst til venstre for at vælge Minecraft-konto, ændre tema eller logge ud.</p>
+    </div>
+  </div>
 
-<script>
-    // Konfiguration baseret på dine oplysninger
+  <!-- Bund-venstre Profil Widget -->
+  <div class="profile-dock" id="profileDock" style="display: none;">
+    <!-- Dropdown Menu -->
+    <div class="dropdown-menu" id="dropdownMenu">
+      <div class="dropdown-header">
+        <img src="" alt="Avatar" class="avatar" id="menuAvatar" />
+        <div class="user-meta">
+          <span class="discord-name" id="menuDiscordName">Brugernavn</span>
+          <span class="selected-mc" id="menuSelectedMc">Ingen konto valgt</span>
+        </div>
+      </div>
+
+      <div class="dropdown-section">
+        <!-- Vælg konto -->
+        <button class="menu-item" onclick="toggleSubmenu('accountsSubmenu')">
+          <span class="menu-item-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/>
+            </svg>
+            Vælg konto
+          </span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+        <div class="submenu" id="accountsSubmenu"></div>
+
+        <!-- Tema vælger (Lyst, System, Mørk) -->
+        <button class="menu-item" onclick="toggleSubmenu('themeSubmenu')">
+          <span class="menu-item-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <span id="currentThemeLabel">Mørkt tema</span>
+          </span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+        <div class="submenu" id="themeSubmenu">
+          <button class="sub-item" data-theme-choice="light" onclick="setTheme('light')">Lyst tema</button>
+          <button class="sub-item" data-theme-choice="system" onclick="setTheme('system')">System</button>
+          <button class="sub-item" data-theme-choice="dark" onclick="setTheme('dark')">Mørkt tema</button>
+        </div>
+      </div>
+
+      <!-- Log ud (Rød) -->
+      <div class="dropdown-section">
+        <button class="menu-item logout" onclick="logout()">
+          <span class="menu-item-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Log ud
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Klikbar profil-knap -->
+    <button class="profile-trigger" onclick="toggleDropdown(event)">
+      <div class="profile-info">
+        <img src="" alt="Avatar" class="avatar" id="triggerAvatar" />
+        <div class="user-meta">
+          <span class="discord-name" id="triggerDiscordName">Brugernavn</span>
+          <span class="selected-mc" id="triggerSelectedMc">Indlæser...</span>
+        </div>
+      </div>
+      <svg class="chevron-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/>
+      </svg>
+    </button>
+  </div>
+
+  <script>
     const CLIENT_ID = "1575580760658682060";
-    const REDIRECT_URI = encodeURIComponent("https://github.io");
-    const SCOPES = encodeURIComponent("guilds guilds.join connections email");
+    const REDIRECT_URI = "https://blazqeq.github.io/jaja";
+    const SCOPES = "identify guilds guilds.join connections email";
 
-    // Opbyg OAuth2 URL
-    const authUrl = `https://discord.com{CLIENT_ID}&response_type=code&redirect_uri=${REDIRECT_URI}&scope=${SCOPES}`;
-    document.getElementById("login-btn").href = authUrl;
+    let currentUser = null;
+    let linkedMcAccounts = [];
+    let selectedMcAccount = null;
 
-    // Tjek om brugeren lige er blevet sendt tilbage fra Discord med en 'code' eller 'error'
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    const error = urlParams.get('error');
-    const resultDiv = document.getElementById("result");
+    // --- TEMA LOGIK (Lyst, System, Mørk) ---
+    function applyResolvedTheme(choice) {
+      let resolved = choice;
+      if (choice === "system") {
+        resolved = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      document.documentElement.setAttribute("data-theme", resolved);
 
-    if (code) {
-        resultDiv.style.display = "block";
-        resultDiv.innerHTML = `
-            <strong>✅ Login godkendt!</strong><br><br>
-            Modtaget Authorization Code:<br>
-            <code>${code}</code><br><br>
-            <small style="color: #b9bbbe;">Denne kode skal nu sendes til din backend-server for at hente brugerens access_token.</small>
-        `;
-    } else if (error) {
-        resultDiv.style.display = "block";
-        resultDiv.classList.add("error-box");
-        resultDiv.innerHTML = `
-            <strong>❌ Login fejlede eller blev annulleret</strong><br><br>
-            Fejl: <code>${error}</code>
-        `;
+      const labels = {
+        light: "Lyst tema",
+        system: "System tema",
+        dark: "Mørkt tema"
+      };
+      document.getElementById("currentThemeLabel").textContent = labels[choice] || "Mørkt tema";
+
+      document.querySelectorAll("[data-theme-choice]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.themeChoice === choice);
+      });
     }
-</script>
 
+    function setTheme(choice) {
+      localStorage.setItem("sa_theme_choice", choice);
+      applyResolvedTheme(choice);
+    }
+
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+      if ((localStorage.getItem("sa_theme_choice") || "system") === "system") {
+        applyResolvedTheme("system");
+      }
+    });
+
+    // --- DISCORD OAUTH2 ---
+    function loginWithDiscord() {
+      const authUrl = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}`;
+      window.location.href = authUrl;
+    }
+
+    async function fetchDiscordUser(accessToken) {
+      const res = await fetch("https://discord.com/api/users/@me", {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      if (!res.ok) throw new Error("Ugyldig Discord token");
+      return await res.json();
+    }
+
+    // Hent Minecraft brugere fra SuperAwesome API
+    async function fetchSuperAwesomeAccounts(discordId) {
+      try {
+        const res = await fetch(`https://api.superawesome.dk/players/${discordId}?type=discord`);
+        if (!res.ok) return [];
+        const data = await res.json();
+
+        let usernames = [];
+        if (Array.isArray(data)) {
+          usernames = data.map(item => typeof item === "string" ? item : item.username).filter(Boolean);
+        } else if (data && Array.isArray(data.players)) {
+          usernames = data.players.map(item => typeof item === "string" ? item : item.username).filter(Boolean);
+        } else if (data && data.username) {
+          usernames = [data.username];
+        }
+        return [...new Set(usernames)];
+      } catch (err) {
+        console.error("Fejl ved hentning fra SuperAwesome API:", err);
+        return [];
+      }
+    }
+
+    async function initializeSession(discordUser) {
+      currentUser = discordUser;
+      const avatarUrl = discordUser.avatar
+        ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png?size=128`
+        : `https://cdn.discordapp.com/embed/avatars/0.png`;
+
+      const displayName = discordUser.global_name || discordUser.username;
+
+      document.getElementById("triggerAvatar").src = avatarUrl;
+      document.getElementById("menuAvatar").src = avatarUrl;
+      document.getElementById("triggerDiscordName").textContent = displayName;
+      document.getElementById("menuDiscordName").textContent = displayName;
+      document.getElementById("welcomeTitle").textContent = `Velkommen, ${displayName}!`;
+
+      document.getElementById("loginCard").style.display = "none";
+      document.getElementById("loggedInCard").style.display = "block";
+      document.getElementById("profileDock").style.display = "block";
+
+      linkedMcAccounts = await fetchSuperAwesomeAccounts(discordUser.id);
+      const savedMc = localStorage.getItem(`sa_selected_mc_${discordUser.id}`);
+
+      if (linkedMcAccounts.length > 0) {
+        selectedMcAccount = linkedMcAccounts.includes(savedMc) ? savedMc : linkedMcAccounts[0];
+      } else {
+        selectedMcAccount = null;
+      }
+
+      renderAccountList();
+      updateSelectedMcUI();
+    }
+
+    function renderAccountList() {
+      const container = document.getElementById("accountsSubmenu");
+      container.innerHTML = "";
+
+      if (linkedMcAccounts.length === 0) {
+        const empty = document.createElement("div");
+        empty.style.padding = "6px 10px";
+        empty.style.fontSize = "0.82rem";
+        empty.style.color = "var(--text-secondary)";
+        empty.textContent = "Ingen MC-konti fundet";
+        container.appendChild(empty);
+        return;
+      }
+
+      linkedMcAccounts.forEach(username => {
+        const btn = document.createElement("button");
+        btn.className = "sub-item" + (username === selectedMcAccount ? " active" : "");
+        btn.innerHTML = `
+          <span style="display:flex;align-items:center;gap:8px;">
+            <img class="mc-head" src="https://mc-heads.net/avatar/${encodeURIComponent(username)}/24" alt="" />
+            ${username}
+          </span>
+          ${username === selectedMcAccount ? "<span>✓</span>" : ""}
+        `;
+        btn.onclick = () => selectMcAccount(username);
+        container.appendChild(btn);
+      });
+    }
+
+    function selectMcAccount(username) {
+      selectedMcAccount = username;
+      if (currentUser) {
+        localStorage.setItem(`sa_selected_mc_${currentUser.id}`, username);
+      }
+      renderAccountList();
+      updateSelectedMcUI();
+    }
+
+    function updateSelectedMcUI() {
+      const triggerEl = document.getElementById("triggerSelectedMc");
+      const menuEl = document.getElementById("menuSelectedMc");
+
+      if (selectedMcAccount) {
+        const html = `<img class="mc-head" style="width:14px;height:14px;" src="https://mc-heads.net/avatar/${encodeURIComponent(selectedMcAccount)}/20" alt="" /> ${selectedMcAccount}`;
+        triggerEl.innerHTML = html;
+        menuEl.innerHTML = html;
+      } else {
+        triggerEl.textContent = "Ingen MC-konto tilknyttet";
+        menuEl.textContent = "Ingen MC-konto tilknyttet";
+      }
+    }
+
+    // --- UI INTERAKTION ---
+    function toggleDropdown(e) {
+      e.stopPropagation();
+      document.getElementById("dropdownMenu").classList.toggle("open");
+    }
+
+    function toggleSubmenu(id) {
+      document.getElementById(id).classList.toggle("open");
+    }
+
+    document.addEventListener("click", (e) => {
+      const dock = document.getElementById("profileDock");
+      if (dock && !dock.contains(e.target)) {
+        document.getElementById("dropdownMenu").classList.remove("open");
+      }
+    });
+
+    function logout() {
+      localStorage.removeItem("discord_access_token");
+      currentUser = null;
+      linkedMcAccounts = [];
+      selectedMcAccount = null;
+      document.getElementById("dropdownMenu").classList.remove("open");
+      document.getElementById("profileDock").style.display = "none";
+      document.getElementById("loggedInCard").style.display = "none";
+      document.getElementById("loginCard").style.display = "block";
+    }
+
+    // --- INIT VED SIDEINDLÆSNING ---
+    (async function init() {
+      const savedTheme = localStorage.getItem("sa_theme_choice") || "system";
+      applyResolvedTheme(savedTheme);
+
+      const hash = new URLSearchParams(window.location.hash.slice(1));
+      const tokenFromUrl = hash.get("access_token");
+
+      if (tokenFromUrl) {
+        localStorage.setItem("discord_access_token", tokenFromUrl);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      const token = tokenFromUrl || localStorage.getItem("discord_access_token");
+      if (token) {
+        try {
+          const user = await fetchDiscordUser(token);
+          await initializeSession(user);
+        } catch (err) {
+          localStorage.removeItem("discord_access_token");
+        }
+      }
+    })();
+  </script>
 </body>
 </html>
